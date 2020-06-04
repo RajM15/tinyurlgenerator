@@ -3,6 +3,7 @@ package org.example.tug.service;
 import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
 
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,15 +41,17 @@ public class UrlService {
         StringBuffer sb = new StringBuffer();
         long newNumber = counter;
         while(newNumber>0)    {
-            int remainder = (int) Math.abs( newNumber % maxLength);
-            sb.append(charSet.charAt(remainder));
+            BigInteger remainder = BigInteger.valueOf(newNumber % maxLength);
+            sb.append(charSet.charAt(remainder.intValueExact()));
             newNumber = newNumber / maxLength;
         }
         return sb.reverse().toString();
     }
 
     private long getUniqueNumber() {
-        return salt.incrementAndGet() + System.currentTimeMillis();
+        long newNumber = salt.incrementAndGet() + (System.currentTimeMillis()/1000);
+        log.info("Salt: {}", newNumber);
+        return newNumber;
     }
 
     public long convertToBase10(String tinyUrl)   {
@@ -66,6 +69,23 @@ public class UrlService {
                 num = num * 62 + tinyUrl.charAt(i) - '0' + 52;
         }
         return num;
+    }
+
+    public String getOriginalUrl2(String tinyUrl)    {
+        long tinyUrlCode = convertToBase10_2(tinyUrl);
+        String originalUrl = this.store.get(tinyUrlCode).getValue1().toString();
+        return originalUrl;
+    }
+
+    public long convertToBase10_2(String tinyUrl)   {
+        int i = 0, result = 0, counter = 0;
+        while(i<tinyUrl.length())   {
+            counter = i+1;
+            int mapped = this.charSet.indexOf(tinyUrl.charAt(i));
+            result += mapped * Math.pow(maxLength, tinyUrl.length()-counter);
+            i++;
+        }
+        return result;
     }
 
 }

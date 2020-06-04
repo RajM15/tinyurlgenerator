@@ -26,6 +26,8 @@ public class App {
         }
 
         Assert.assertEquals("Wrong URL retrieved", originalUrl, reverseUrl);
+        reverseUrl = urlService.getOriginalUrl2(tinyUrl);
+        Assert.assertEquals("Wrong URL retrieved", originalUrl, reverseUrl);
     }
 
 }
